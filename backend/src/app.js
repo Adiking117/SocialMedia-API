@@ -1,5 +1,7 @@
 import express from "express"
-import router from "./routes/user.routes.js";
+import userRouter from "./routes/user.routes.js";
+import blogRouter from "./routes/blog.routes.js";
+
 import cors from "cors";
 import cookieParser from 'cookie-parser';
 
@@ -10,9 +12,14 @@ app.use(cors({
     credentials:true,
 }))
 
-app.use(express.json())
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({extended:true,limit:"16kb"}))
+app.use(express.static("public"))
 app.use(cookieParser())
-app.use("/api/users",router)
+
+app.use("/api/users",userRouter)
+app.use("/api/blogs",blogRouter)
+
 
 export default app;
 

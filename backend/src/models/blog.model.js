@@ -10,13 +10,13 @@ const blogSchema = new mongoose.Schema({
         required:true
     },
     image:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
-    },
-    user:{
         type:String,
         required:true
-    }
+    },
+    // user:{
+    //     type:mongoose.Schema.Types.ObjectId,
+    //     ref:"User",
+    // }
 },{timestamps:true})
 
 export const Blog = mongoose.model("Blog",blogSchema)
