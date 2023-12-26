@@ -3,6 +3,22 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 
+const generateUserAccessRefreshToken = async function(userid){
+    try {
+        const user = await User.findById(userid);
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+    
+        user.refreshToken = refreshToken;
+    
+        await user.save({validation:false})
+        return { accessToken,refreshToken }
+    } catch (error) {
+        throw new ApiError(500,error)
+    }
+}
+
+
 const getAllUser = asyncHandler(async(req,res)=>{
     const user = await User.find()
     // console.log(user)
@@ -16,6 +32,7 @@ const getAllUser = asyncHandler(async(req,res)=>{
         new ApiResponse(200,user,"Users fetched successfully")
     )
 })
+
 
 const registerUser = asyncHandler(async(req,res)=>{
     const { name,email,password } = req.body;
@@ -42,7 +59,9 @@ const registerUser = asyncHandler(async(req,res)=>{
     )
 })
 
+
 const loginUser = asyncHandler(async(req,res)=>{
+    // console.log(req.body) // input provided in postman
     const {email,password} = req.body
     const user = await User.findOne({email})
     if(!user){
@@ -54,13 +73,24 @@ const loginUser = asyncHandler(async(req,res)=>{
         throw new ApiError(201,"Incorrect Password")
     }
 
+    const { accessToken,refreshToken } = await generateUserAccessRefreshToken(user._id)
+
     const loggedinUser = await User.findById(user._id)
-    .select("-password")
+    .select("-password -refreshToken")
+
+    const options = {       // modifible by server
+        httpOnly:true,
+        secure:true
+    }
 
     return res
     .status(200)
+    .cookie("accessToken",accessToken,options)
+    .cookie("refreshToken",refreshToken,options)
     .json(
-        new ApiResponse(200,loggedinUser,"User logged IN Successfully")
+        new ApiResponse(200,{
+            loggedinUser : loggedinUser ,accessToken,refreshToken
+        },"User logged IN Successfully")
     )
 })
 
