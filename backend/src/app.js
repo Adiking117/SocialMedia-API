@@ -8,7 +8,7 @@ app.use(cors({
     credentials:true,
 }))
 
-
+app.use(express.json())
 app.use("/api/users",router)
 
 export default app;
