@@ -205,7 +205,7 @@ const followUser = asyncHandler(async(req,res)=>{
     const { userToBeFollowed,follower } = req.body
 
     // console.log("follower",follower)
-    // console.log("UserFollw",userToBeFollowed)
+    // console.log("UsertobeFollw",userToBeFollowed)
 
     if(!userToBeFollowed){
         throw new ApiError(402,"User doesn't exists")
@@ -219,6 +219,9 @@ const followUser = asyncHandler(async(req,res)=>{
 
     if(!userToFollow){
         throw new ApiError(402,"Username didnt matched")
+    }
+    if(userWhoIsFollowing.followings.includes(userToBeFollowed)){
+        throw new ApiError(401,"You already follow that user")
     }
 
     userWhoIsFollowing.followings.push(userToFollow.username);
@@ -235,6 +238,29 @@ const followUser = asyncHandler(async(req,res)=>{
 })
 
 
+const unfollowUser = asyncHandler(async(req,res)=>{
+    const { userToBeUnfollowed,follower } = req.body
+    if(!userToBeUnfollowed){
+        throw new ApiError(402,"User doesn't exists")
+    }
+
+    const userWhoIsUnfollowing = await User.findOne({username: follower})
+    const userToUnfollow = await User.findOne({username: userToBeUnfollowed})
+
+    userWhoIsUnfollowing.followings.pop(userToUnfollow.username);
+    await userWhoIsUnfollowing.save();
+
+    userToUnfollow.followers.pop(follower)
+    await userToUnfollow.save();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,{},"User Unfollowed Successfully")
+    )
+})
+
+
 
 export {
     getAllUser,
@@ -244,5 +270,6 @@ export {
     updateUserName,
     updateUserPassword,
     deleteUser,
-    followUser
+    followUser,
+    unfollowUser
 }
