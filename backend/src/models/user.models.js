@@ -33,10 +33,10 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: [],
     },
-    blogs:{
+    blogs:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Blog",
-    }
+    }]
 },{
     timestamps:true
 })

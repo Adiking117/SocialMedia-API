@@ -21,10 +21,12 @@ const addBlog = asyncHandler(async(req,res)=>{
     // console.log(req.body)
     // console.log(req.files)
 
-    const { title,description,postname } = req.body;
-    if(!(title && description && postname)){
+    const { title,description,postname,username } = req.body;
+    if(!(title && description && postname && username)){
         throw new ApiError(401,"Please provide details")
     }
+
+    const user = await User.findOne({username})
 
     const imageLocalPath = req.files?.image[0]?.path
     // console.log(imageLocalPath)
@@ -41,7 +43,8 @@ const addBlog = asyncHandler(async(req,res)=>{
         postname,
         title,
         description,
-        image: image.url
+        image: image.url,
+        user:user._id
     })
 
     const createdBlog = Blog.findById(blog._id)
@@ -49,6 +52,12 @@ const addBlog = asyncHandler(async(req,res)=>{
     if(!createdBlog){
         throw new ApiError(500,"Something went wrong while uploading")
     }
+
+    await User.findByIdAndUpdate(
+        user._id,
+        { $push: { blogs: blog._id } },
+        { new: true }
+    );
 
     return res
     .status(200)
