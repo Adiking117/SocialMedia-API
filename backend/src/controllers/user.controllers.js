@@ -35,15 +35,16 @@ const getAllUser = asyncHandler(async(req,res)=>{
 
 
 const registerUser = asyncHandler(async(req,res)=>{
-    const { name,email,password } = req.body;
-    if(!(name && email && password)){
+    const { name,username,email,password } = req.body;
+    if(!(name && username && email && password)){
         throw new ApiError(401,"Fill all the details")
     }
-    const existedUser = await User.findOne({email})
+    const existedUser = await User.findOne({username})
     if(existedUser){
         throw new ApiError(402,"User Already exist")
     }
     const user = await User.create({
+        username,
         name,
         email,
         password
@@ -200,6 +201,39 @@ const deleteUser = asyncHandler(async(req,res)=>{
 })
 
 
+const followUser = asyncHandler(async(req,res)=>{
+    const { userToBeFollowed,follower } = req.body
+
+    // console.log("follower",follower)
+    // console.log("UserFollw",userToBeFollowed)
+
+    if(!userToBeFollowed){
+        throw new ApiError(402,"User doesn't exists")
+    }
+
+    const userWhoIsFollowing = await User.findOne({username: follower})
+    const userToFollow = await User.findOne({username: userToBeFollowed})
+
+    // console.log("userwhoisfollwoing",userWhoIsFollowing)
+    // console.log("usertofollow",userToFollow)
+
+    if(!userToFollow){
+        throw new ApiError(402,"Username didnt matched")
+    }
+
+    userWhoIsFollowing.followings.push(userToFollow.username);
+    await userWhoIsFollowing.save();
+
+    userToFollow.followers.push(follower)
+    await userToFollow.save();
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,{},"User followed Successfully")
+    )
+})
+
 
 
 export {
@@ -209,5 +243,6 @@ export {
     logoutUser,
     updateUserName,
     updateUserPassword,
-    deleteUser
+    deleteUser,
+    followUser
 }

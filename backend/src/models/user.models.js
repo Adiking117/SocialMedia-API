@@ -3,6 +3,11 @@ import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken'
 
 const userSchema = new mongoose.Schema({
+    username:{
+        type:String,
+        required:true,
+        unique:true
+    },
     name:{
         type:String,
         required:true
@@ -27,6 +32,10 @@ const userSchema = new mongoose.Schema({
     followings: {
         type: Array,
         default: [],
+    },
+    blogs:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Blog",
     }
 },{
     timestamps:true
