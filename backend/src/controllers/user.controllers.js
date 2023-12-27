@@ -94,8 +94,97 @@ const loginUser = asyncHandler(async(req,res)=>{
     )
 })
 
+
+const logoutUser = asyncHandler(async(req,res)=>{
+    const {email}= req.body
+    await User.findOneAndUpdate(
+        {email},
+        {
+            $set:{
+                refreshToken : undefined
+            }
+        },
+        {
+            new : true
+        }
+    )
+
+    const options = {       
+        httpOnly:true,
+        secure:true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
+    .json(
+        new ApiResponse(200,{},"User logged Out")
+    )
+
+})
+
+
+const updateUserName = asyncHandler(async(req,res)=>{
+    const {email,name} = req.body;
+
+    // console.log(req.body)
+    
+    if(!(name && email)){
+        throw new ApiError(401,"Please provide name to be updated")
+    }
+
+    // console.log(req.user)
+    const updateduser = await User.findOneAndUpdate(
+        {email},
+        {
+            $set:{
+                name:name
+            }
+        },
+        {
+            new:true
+        }
+    )
+    // console.log(updateduser)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,updateduser,"Username updated successfully")
+    )
+
+})
+
+
+const updateUserPassword = asyncHandler(async(req,res)=>{
+    const {email , newPassword , oldPassword } = req.body
+    if(!(email && newPassword && oldPassword)){
+        throw new ApiError(401,"Enter all details to be updated")
+    }
+    const user = await User.findOne({email})
+
+    const isPasswordCorrect = await user.isPasswordValid(oldPassword)
+    if(!isPasswordCorrect){
+        throw new ApiError(400,"Password incorrect")
+    }
+
+    user.password = newPassword;
+
+    await user.save({ validateBeforeSave:false })
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,{},"Password Updated Successfully")
+    )
+})
+
 export {
     getAllUser,
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser,
+    updateUserName,
+    updateUserPassword
 }

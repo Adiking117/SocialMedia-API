@@ -3,7 +3,6 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
-import CircularJSON from 'circular-json';
 
 const getAllBlog = asyncHandler(async(req,res)=>{
     const blog = await Blog.find();
@@ -61,7 +60,12 @@ const addBlog = asyncHandler(async(req,res)=>{
     
 })
 
+const updateBlog = asyncHandler(async(req,res)=>{
+    
+})
+
 export{
     getAllBlog,
-    addBlog
+    addBlog,
+    updateBlog
 }
