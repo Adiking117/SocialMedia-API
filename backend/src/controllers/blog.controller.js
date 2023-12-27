@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { User } from "../models/user.models.js"
 
 const getAllBlog = asyncHandler(async(req,res)=>{
     const blog = await Blog.find();
@@ -20,8 +21,8 @@ const addBlog = asyncHandler(async(req,res)=>{
     // console.log(req.body)
     // console.log(req.files)
 
-    const { title,description } = req.body;
-    if(!(title && description)){
+    const { title,description,postname } = req.body;
+    if(!(title && description && postname)){
         throw new ApiError(401,"Please provide details")
     }
 
@@ -37,6 +38,7 @@ const addBlog = asyncHandler(async(req,res)=>{
     }
 
     const blog = await Blog.create({
+        postname,
         title,
         description,
         image: image.url
@@ -83,8 +85,54 @@ const updateBlog = asyncHandler(async(req,res)=>{
     )
 })
 
+const likeBlog = asyncHandler(async(req,res)=>{
+    const {postname,username} = req.body
+    if(!(postname && username)){
+        throw new ApiError(400,"Please provide details")
+    }
+
+    const user = await User.findOne({username})
+    const post = await Blog.findOne({postname})
+
+    if(!(post && user)){
+        throw new ApiError(400,"Blog not dound")
+    }
+
+    await post.addLike(user.username)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,post.likes.length,"Liked the post")
+    )
+})
+
+const dislikeBlog = asyncHandler(async(req,res)=>{
+    const {postname,username} = req.body
+    if(!(postname && username)){
+        throw new ApiError(400,"Please provide details")
+    }
+
+    const user = await User.findOne({username})
+    const post = await Blog.findOne({postname})
+
+    if(!(post && user)){
+        throw new ApiError(400,"Blog not dound")
+    }
+
+    await post.removeLike(user.username)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,post.likes.length,"Disliked the post")
+    )
+})
+
 export{
     getAllBlog,
     addBlog,
-    updateBlog
+    updateBlog,
+    likeBlog,
+    dislikeBlog
 }

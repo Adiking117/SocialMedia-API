@@ -1,5 +1,5 @@
 import express from "express"
-import { getAllBlog,addBlog, updateBlog } from "../controllers/blog.controller.js"
+import { getAllBlog,addBlog, updateBlog, likeBlog, dislikeBlog } from "../controllers/blog.controller.js"
 import { upload } from "../middlewares/multer.middlewares.js"
 
 const blogRouter = express.Router()
@@ -15,6 +15,9 @@ blogRouter.route("/add").post(
     addBlog
 )
 blogRouter.route("/update-detail").post(updateBlog)
+blogRouter.route("/like-blog").post(likeBlog)
+blogRouter.route("/dislike-blog").post(dislikeBlog)
+
 
 
 export default blogRouter;
