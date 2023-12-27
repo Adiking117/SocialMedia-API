@@ -1,5 +1,5 @@
 import express from "express"
-import { getAllBlog,addBlog } from "../controllers/blog.controller.js"
+import { getAllBlog,addBlog, updateBlog } from "../controllers/blog.controller.js"
 import { upload } from "../middlewares/multer.middlewares.js"
 
 const blogRouter = express.Router()
@@ -12,7 +12,9 @@ blogRouter.route("/add").post(
             maxCount: 1
         }
     ]),
-        addBlog
-    )
+    addBlog
+)
+blogRouter.route("/update-detail").post(updateBlog)
+
 
 export default blogRouter;

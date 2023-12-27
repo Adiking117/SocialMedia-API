@@ -19,6 +19,14 @@ const userSchema = new mongoose.Schema({
     },
     refreshToken:{
         type:String
+    },
+    followers: {
+        type: Array,
+        default: [],
+    },
+    followings: {
+        type: Array,
+        default: [],
     }
 },{
     timestamps:true
