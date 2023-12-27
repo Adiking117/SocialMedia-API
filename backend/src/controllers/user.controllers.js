@@ -180,11 +180,34 @@ const updateUserPassword = asyncHandler(async(req,res)=>{
     )
 })
 
+
+const deleteUser = asyncHandler(async(req,res)=>{
+    const { email,password } = req.body
+    // console.log(req.body)
+    const user = await User.findOne({email});
+    const isPasswordCorrect = await user.isPasswordValid(password)
+    if(!isPasswordCorrect){
+        throw new ApiError(401,"Password is wrong")
+    }
+    await User.findOneAndDelete(
+        {email},
+    )
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,"User deleted Successfully")
+    )
+})
+
+
+
+
 export {
     getAllUser,
     registerUser,
     loginUser,
     logoutUser,
     updateUserName,
-    updateUserPassword
+    updateUserPassword,
+    deleteUser
 }
