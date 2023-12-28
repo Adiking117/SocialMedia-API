@@ -424,11 +424,19 @@ const likeBlog = asyncHandler(async(req,res)=>{
     const user = await User.findOne({username})
     const post = await Blog.findOne({postname})
 
+    console.log("user : ",user)
+    console.log("post : ",post)
+
     if(!(post && user)){
         throw new ApiError(400,"Blog not dound")
     }
 
     await post.addLike(user.username)
+
+    if(!user.likeHistory.includes(post._id)){
+        user.likeHistory.push(post._id)
+    }
+    await user.save();
 
     return res
     .status(200)
@@ -452,6 +460,10 @@ const dislikeBlog = asyncHandler(async(req,res)=>{
     }
 
     await post.removeLike(user.username)
+    if(user.likeHistory.includes(post._id)){
+        user.likeHistory.pop(post._id)
+    }
+    await user.save();
 
     return res
     .status(200)
@@ -479,6 +491,7 @@ const getUserDetails = asyncHandler(async(req,res)=>{
         No_of_Followers : user.followers.length,
         No_of_Followings : user.followings.length,
         Post : [user.blogs],
+        LikeHistory : [user.likeHistory]
     }
 
     if(!userDetails){
@@ -491,22 +504,6 @@ const getUserDetails = asyncHandler(async(req,res)=>{
         new ApiResponse(200,userDetails,"Details fetched Successfully")
     )
 })
-
-
-//  const getUserPostLikeHistory = asyncHandler(async(req,res)=>{
-//     const {username} = req.body
-//     if(!username){
-//         throw new ApiError(401,"Username required")
-//     }
-
-//     const user = await User.findOne({username})
-//     if(!user){
-//         throw new ApiError(400,"User not found")
-//     }
-
-
-//  })
-
 
 
 export {

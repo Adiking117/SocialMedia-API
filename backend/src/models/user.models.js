@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema({
     blogs:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Blog",
+    }],
+    likeHistory:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Blog",
     }]
 },{
     timestamps:true
