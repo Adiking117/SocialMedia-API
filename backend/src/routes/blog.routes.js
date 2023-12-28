@@ -1,5 +1,5 @@
 import express from "express"
-import { getAllBlog,addBlog, updateBlog, likeBlog, dislikeBlog } from "../controllers/user.controllers.js"
+import { getAllBlog,addBlog, updateBlog, likeBlog, dislikeBlog, deleteBlog } from "../controllers/user.controllers.js"
 import { upload } from "../middlewares/multer.middlewares.js"
 import {verifyJWT} from "../middlewares/auth.middlewares.js"
 
@@ -17,6 +17,7 @@ blogRouter.route("/add").post(
     addBlog
 )
 blogRouter.route("/update-detail").post(verifyJWT,updateBlog)
+blogRouter.route("/delete-blog").post(verifyJWT,deleteBlog)
 blogRouter.route("/like-blog").post(verifyJWT,likeBlog)
 blogRouter.route("/dislike-blog").post(verifyJWT,dislikeBlog)
 

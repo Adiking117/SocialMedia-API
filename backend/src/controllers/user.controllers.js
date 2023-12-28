@@ -315,7 +315,9 @@ const addBlog = asyncHandler(async(req,res)=>{
 
     await User.findByIdAndUpdate(
         user._id,
-        { $push: { blogs: blog._id } },
+        { 
+            $push: { blogs: blog._id } 
+        },
         { new: true }
     );
 
@@ -329,13 +331,13 @@ const addBlog = asyncHandler(async(req,res)=>{
 
 
 const updateBlog = asyncHandler(async(req,res)=>{
-    const { title,description } = req.body
-    if(!(title || description)){
+    const { postname,title,description } = req.body
+    if(!(postname && (title || description))){
         throw new ApiError(401,"Please provide title to be updated")
     }
 
     const updatedblog = await Blog.findOneAndUpdate(
-        {title,description},
+        {postname},
         {
             $set:{
                 title:title,
@@ -352,6 +354,46 @@ const updateBlog = asyncHandler(async(req,res)=>{
     .status(200)
     .json(
         new ApiResponse(200,updatedblog,"Blog updated successfully")
+    )
+})
+
+
+const deleteBlog = asyncHandler(async(req,res)=>{
+    const { postname,username } = req.body
+    // console.log(req.body)
+    if(!(postname && username)){
+        throw new ApiError(402,"Please Enter Postname and Username")
+    }
+
+    const user = await User.findOne({username})
+    const post = await Blog.findOne({postname})
+    // console.log("user: ",user)
+    // console.log("post: ",post)
+    // console.log("userid :",user._id)
+    // console.log("postid :",post._id)
+   
+
+    if(!(post&&user)){
+        throw new ApiError(402,"Not found")
+    }
+
+    await User.findByIdAndUpdate(
+        user._id,
+        {
+            $pull : { blogs: post._id}
+        },
+        {
+            new:true
+        }
+    )
+    await Blog.findByIdAndDelete(post._id)
+    // await post.findOneAndDelete({postname})
+
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,{},"Post Deleted SuccessFully")
     )
 })
 
@@ -416,6 +458,7 @@ export {
     getAllBlog,
     addBlog,
     updateBlog,
+    deleteBlog,
     likeBlog,
     dislikeBlog
 }
