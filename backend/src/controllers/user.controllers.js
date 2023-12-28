@@ -461,6 +461,53 @@ const dislikeBlog = asyncHandler(async(req,res)=>{
 })
 
 
+const getUserDetails = asyncHandler(async(req,res)=>{
+    const {username} = req.body
+    if(!username){
+        throw new ApiError(401,"Username required")
+    }
+
+    const user = await User.findOne({username})
+    if(!user){
+        throw new ApiError(400,"User not found")
+    }
+
+    const userDetails = {
+        username : user.username,
+        avatar : user.avatar,
+        No_of_Post : user.blogs.length,
+        No_of_Followers : user.followers.length,
+        No_of_Followings : user.followings.length,
+        Post : [user.blogs],
+    }
+
+    if(!userDetails){
+        throw new ApiError(401,"Details not found")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,userDetails,"Details fetched Successfully")
+    )
+})
+
+
+//  const getUserPostLikeHistory = asyncHandler(async(req,res)=>{
+//     const {username} = req.body
+//     if(!username){
+//         throw new ApiError(401,"Username required")
+//     }
+
+//     const user = await User.findOne({username})
+//     if(!user){
+//         throw new ApiError(400,"User not found")
+//     }
+
+
+//  })
+
+
 
 export {
     getAllUser,
@@ -477,5 +524,6 @@ export {
     updateBlog,
     deleteBlog,
     likeBlog,
-    dislikeBlog
+    dislikeBlog,
+    getUserDetails
 }
