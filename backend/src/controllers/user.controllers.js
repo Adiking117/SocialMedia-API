@@ -491,7 +491,7 @@ const getUserDetails = asyncHandler(async(req,res)=>{
         No_of_Followers : user.followers.length,
         No_of_Followings : user.followings.length,
         Post : [user.blogs],
-        LikeHistory : [user.likeHistory]
+        // LikeHistory : [user.likeHistory]
     }
 
     if(!userDetails){
@@ -504,6 +504,51 @@ const getUserDetails = asyncHandler(async(req,res)=>{
         new ApiResponse(200,userDetails,"Details fetched Successfully")
     )
 })
+
+
+const getLikeHistory = asyncHandler(async(req, res) => {
+    const {username} = req.body
+
+    if(!username){
+        throw new ApiError(400,"Please Provide Usernme")
+    }
+
+    const user = await User.findOne({username})
+
+    if(!user){
+        throw new ApiError(400,"User not found")
+    }
+
+    const like = await User.aggregate([
+        {
+            $match: {
+                _id: user._id
+            }
+        },
+        {
+            $lookup: {
+                from: "blogs",
+                localField: "likeHistory",
+                foreignField: "_id",
+                as: "likeHistory",
+            }
+        },
+        {
+            $project: {
+                _id:0,
+                likeHistory : 1,
+            }
+        }
+    ]);
+
+    console.log("like ", like);
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, like[0].likeHistory, "Like History fetched successfully")
+        );
+});
 
 
 export {
@@ -522,5 +567,6 @@ export {
     deleteBlog,
     likeBlog,
     dislikeBlog,
-    getUserDetails
+    getUserDetails,
+    getLikeHistory
 }
