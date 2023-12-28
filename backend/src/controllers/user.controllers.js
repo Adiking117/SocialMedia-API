@@ -38,6 +38,7 @@ const getAllUser = asyncHandler(async(req,res)=>{
 
 const registerUser = asyncHandler(async(req,res)=>{
     const { name,username,email,password } = req.body;
+    // console.log(req.body)
     if(!(name && username && email && password)){
         throw new ApiError(401,"Fill all the details")
     }
@@ -45,12 +46,26 @@ const registerUser = asyncHandler(async(req,res)=>{
     if(existedUser){
         throw new ApiError(402,"User Already exist")
     }
+
+    const imageLocalPath = req.files?.avatar[0]?.path
+    // console.log(imageLocalPath)
+    if(!imageLocalPath){
+        throw new ApiError(400,"Image path not found")
+    }
+
+    const avatar = await uploadOnCloudinary(imageLocalPath)
+    if(!avatar){
+        throw new ApiError(400,"Image required")
+    }
+    
     const user = await User.create({
         username,
         name,
         email,
-        password
+        password,
+        avatar: avatar.url
     })
+
     const newuser = await User.findById(user._id).select("-password")
     if(!newuser){
         throw new ApiError(500,"Something went worng")
@@ -307,11 +322,13 @@ const addBlog = asyncHandler(async(req,res)=>{
         user:user._id
     })
 
-    const createdBlog = Blog.findById(blog._id)
+    const createdBlog = await Blog.findById(blog._id)
 
     if(!createdBlog){
         throw new ApiError(500,"Something went wrong while uploading")
     }
+
+    console.log("createdBlog  ",createdBlog)
 
     await User.findByIdAndUpdate(
         user._id,
