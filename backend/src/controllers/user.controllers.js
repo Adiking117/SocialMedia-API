@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import {Blog} from "../models/blog.models.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { Follow } from "../models/follow.models.js"
 
 const generateUserAccessRefreshToken = async function(userid){
     try {
@@ -506,6 +507,84 @@ const getUserDetails = asyncHandler(async(req,res)=>{
 })
 
 
+// const getDetailsOfUser = asyncHandler(async(req,res)=>{
+//     const {username} = req.body
+
+//     if(!username){
+//         throw new ApiError(400,"Please Provide Usernme")
+//     }
+
+//     const user = await User.findOne({username})
+
+//     if(!user){
+//         throw new ApiError(400,"User not found")
+//     }
+
+//     const details = await User.aggregate([
+//         {
+//             $match:{
+//                 _id:user._id
+//             }
+//         },
+//         {
+//             $lookup:{
+//                 from: "follows",
+//                 localField:"_id",
+//                 foreignField:"followings",
+//                 as:"followers"
+//             }
+//         },
+//         {
+//             $lookup:{
+//                 from:"follows",
+//                 localField:"_id",
+//                 foreignField:"followers",
+//                 as:"followings"
+//             }
+//         },
+//         {
+//             $addFields:{
+//                 followers:{
+//                     $size : "$followers"
+//                 },
+//                 followings:{
+//                     $size : "$followings"
+//                 },
+//                 isFollowed:{
+//                     $cond:{
+//                         if:{$in : [user.id,"$followers.followers"]},
+//                         then:true,
+//                         else:false
+//                     }
+//                 }
+//             }
+//         },
+//         {
+//             $project:{
+//                 username:1,
+//                 avatar:1,
+//                 followers:1,
+//                 followings:1,
+//                 isFollowed:1
+//             }
+//         }
+//     ]);
+
+//     console.log("details : ",details)
+
+//     if(!details?.length){
+//         throw new ApiError(404,"No Details found")
+//     }
+
+//     return res
+//     .status(200)
+//     .json(
+//         new ApiResponse(200,details[0],"User Details fetched successfuly")
+//     )
+// })
+// future scope
+
+
 const getLikeHistory = asyncHandler(async(req, res) => {
     const {username} = req.body
 
@@ -568,5 +647,6 @@ export {
     likeBlog,
     dislikeBlog,
     getUserDetails,
+    //getDetailsOfUser,
     getLikeHistory
 }

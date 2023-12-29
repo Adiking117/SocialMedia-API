@@ -26,6 +26,8 @@ userRouter.route("/follow").post(verifyJWT,followUser)
 userRouter.route("/unfollow").post(verifyJWT,unfollowUser)
 
 userRouter.route("/get-user").get(verifyJWT,getUserDetails)
+// userRouter.route("/get-details").get(verifyJWT,getDetailsOfUser)
+
 userRouter.route("/like-history").get(verifyJWT,getLikeHistory)
 
 
