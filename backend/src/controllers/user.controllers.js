@@ -204,13 +204,40 @@ const deleteUser = asyncHandler(async(req,res)=>{
     const { email,password } = req.body
     // console.log(req.body)
     const user = await User.findOne({email});
+    // const post = await Blog.findOne({user : user._id});
+
+    console.log("user : ",user)
+    // console.log("post : ",post)
+
     const isPasswordCorrect = await user.isPasswordValid(password)
     if(!isPasswordCorrect){
         throw new ApiError(401,"Password is wrong")
     }
-    await User.findOneAndDelete(
-        {email},
-    )
+
+    // all blogs of that user gets deleted
+    for(const d of user.blogs){
+        await Blog.findByIdAndDelete(d)
+    }
+
+    // followings to the user gets deleted
+    for(const f of user.followings){
+        await User.findOneAndUpdate(
+            { username : f },
+            { $pull : { followers : user.username } }
+        )
+    }
+
+    // likes given to blogs must get deleted
+    for(const l of user.likeHistory){
+        await Blog.findOneAndUpdate(
+            { _id : l },
+            { $pull : { likes : user.username }}
+        )
+    }
+
+    // user is deleted
+    await User.findByIdAndDelete(user._id);
+
     return res
     .status(200)
     .json(
@@ -388,17 +415,26 @@ const deleteBlog = asyncHandler(async(req,res)=>{
     // console.log("user: ",user)
     // console.log("post: ",post)
     // console.log("userid :",user._id)
-    // console.log("postid :",post._id)
+    // console.log("postid :",post.user)
    
 
     if(!(post&&user)){
         throw new ApiError(402,"Not found")
     }
 
+    // if(post.user !== user._id){
+    //     throw new ApiError(403,"You cannot delete posts of other user")
+    // }
+
+    if (!post.user.equals(user._id)) {
+        throw new ApiError(403, "Permission denied: You can only delete your own blogs");
+    }
+
     await User.findByIdAndUpdate(
         user._id,
         {
-            $pull : { blogs: post._id}
+            $pull : { blogs: post._id},
+            //$pull : { }
         },
         {
             new:true
@@ -406,6 +442,8 @@ const deleteBlog = asyncHandler(async(req,res)=>{
     )
     await Blog.findByIdAndDelete(post._id)
     // await post.findOneAndDelete({postname})
+
+
 
 
     return res
@@ -421,15 +459,16 @@ const likeBlog = asyncHandler(async(req,res)=>{
     if(!(postname && username)){
         throw new ApiError(400,"Please provide details")
     }
+    // console.log(username)
 
     const user = await User.findOne({username})
     const post = await Blog.findOne({postname})
 
-    console.log("user : ",user)
-    console.log("post : ",post)
+    //console.log("user : ",user)
+    //console.log("post : ",post)
 
     if(!(post && user)){
-        throw new ApiError(400,"Blog not dound")
+        throw new ApiError(400,"Blog or username not found")
     }
 
     await post.addLike(user.username)
@@ -492,7 +531,7 @@ const getUserDetails = asyncHandler(async(req,res)=>{
         No_of_Followers : user.followers.length,
         No_of_Followings : user.followings.length,
         Post : [user.blogs],
-        // LikeHistory : [user.likeHistory]
+        LikeHistory : [user.likeHistory]
     }
 
     if(!userDetails){
